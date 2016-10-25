@@ -50,12 +50,12 @@ public:
     // •\Ž¦
     void draw_sleep_time() const{
         char str[7] = { 0 };
-        str[0] = '0' + (static_cast<int>(fps.real_sleep_time / 10) % 10);
-        str[1] = '0' + (static_cast<int>(fps.real_sleep_time) % 10);
+        str[0] = '0' + (static_cast<int>(real_sleep_time / 10) % 10);
+        str[1] = '0' + (static_cast<int>(real_sleep_time) % 10);
         str[2] = '.';
-        str[3] = '0' + (static_cast<int>(fps.real_sleep_time * 10) % 10);
-        str[4] = '0' + (static_cast<int>(fps.real_sleep_time * 100) % 10);
-        str[5] = '0' + (static_cast<int>(fps.real_sleep_time * 1000) % 10);
+        str[3] = '0' + (static_cast<int>(real_sleep_time * 10) % 10);
+        str[4] = '0' + (static_cast<int>(real_sleep_time * 100) % 10);
+        str[5] = '0' + (static_cast<int>(real_sleep_time * 1000) % 10);
         DrawString(0, 0, str, GetColor(0x00, 0x00, 0x00));
     }
 
