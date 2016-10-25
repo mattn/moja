@@ -13,3 +13,6 @@ $(BIN) : main.o
 
 main.o : main.cpp bmp.hpp
 	$(CXX) -g $(CFLAGS) -c main.cpp
+
+clean :
+	-rm *.o $(BIN)
