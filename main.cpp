@@ -39,24 +39,15 @@ const double G = 1.0;
 //-------- メイングラフィックハンドル
 int main_graphic_handle;
 
-SDL_Surface* SDL_GetVideoSurface() {
-    return canvas;
-}
-
 SDL_Color GetColor(uint8_t r, uint8_t g, uint8_t b) {
     return SDL_Color{r, g, b};
 }
 
 void DrawString(int x, int y, const char* str, SDL_Color color) {
-    SDL_Rect rect, scr_rect;
-    SDL_Surface *image = TTF_RenderUTF8_Blended(font, str, color);
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = image->w;
-    rect.h = image->h;
-    scr_rect.x = 0;
-    scr_rect.y = 0;
-    SDL_BlitSurface(image, &rect, SDL_GetVideoSurface(), &scr_rect);
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, str, color);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(render, surface);
+    SDL_FreeSurface(surface);
+	SDL_RenderCopy(render, texture, NULL, NULL);
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color) {
@@ -226,7 +217,7 @@ int WINAPI WinMain(HINSTANCE handle, HINSTANCE prev_handle, LPSTR lp_cmd, int n_
         SDL_WINDOW_SHOWN);
     canvas = SDL_GetWindowSurface(window);
     render = SDL_CreateRenderer(window, -1, 0);
-    font = TTF_OpenFont("ipag-mona.ttf", 24);
+    font = TTF_OpenFont("ipag-mona.ttf", 15);
 
     bool flag = true;
 
