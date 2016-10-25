@@ -47,7 +47,10 @@ void DrawString(int x, int y, const char* str, SDL_Color color) {
     SDL_Surface *surface = TTF_RenderUTF8_Blended(font, str, color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(render, surface);
     SDL_FreeSurface(surface);
-	SDL_RenderCopy(render, texture, NULL, NULL);
+    SDL_Rect rect = surface->clip_rect;
+    rect.x = x;
+    rect.y = y;
+    SDL_RenderCopy(render, texture, &surface->clip_rect, &rect);
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color) {
@@ -234,6 +237,7 @@ int WINAPI WinMain(HINSTANCE handle, HINSTANCE prev_handle, LPSTR lp_cmd, int n_
 
         DrawBox(0, 0, window_width, window_height, GetColor(0xFF, 0xFF, 0xFF), TRUE);
         rikai::draw();
+        fps.draw_sleep_time();
         SDL_RenderPresent(render);
 
         rikai::proc();
