@@ -8,8 +8,12 @@
 #include <cmath>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-//#include <DxLib.h>
+#ifdef _WIN32
 #include <windows.h>
+#define usleep(x) Sleep(x * 1000)
+#else
+#include <unistd.h>
+#endif
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "bmp.hpp"
@@ -99,7 +103,7 @@ public:
     // èàóù
     void operator ()(){
         ++frame_count;
-        Sleep(static_cast<int>(real_sleep_time));
+        usleep(static_cast<int>(real_sleep_time) / 1000);
         if(frame_count >= fix_frames_num){
             std::chrono::milliseconds real = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
             real_sleep_time = sleep_time * (sleep_time * fix_frames_num) / static_cast<float>(real.count());
