@@ -47,32 +47,34 @@ SDL_Color GetColor(uint8_t r, uint8_t g, uint8_t b) {
     return SDL_Color{r, g, b};
 }
 
-void DrawString(int x, int y, const char* str, SDL_Color color) {
+void DrawString(int x, int y, const char* str, SDL_Color&& color) {
     SDL_Surface *surface = TTF_RenderUTF8_Blended(font, str, color);
+    assert(surface != nullptr);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(render, surface);
+    assert(texture != nullptr);
     SDL_FreeSurface(surface);
     SDL_Rect rect = surface->clip_rect;
-    rect.x = x;
-    rect.y = y;
+    rect.x = x; rect.y = y;
     SDL_RenderCopy(render, texture, &surface->clip_rect, &rect);
 }
 
-void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color) {
+void DrawLine(int x1, int y1, int x2, int y2, SDL_Color&& color) {
     SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
     SDL_RenderDrawLine(render, x1, y1, x2, y2);
 }
 
-void DrawBox(int x, int y, int width, int height, SDL_Color color, BOOL fill) {
+void DrawBox(int x, int y, int width, int height, SDL_Color&& color, BOOL fill) {
     SDL_Rect rect = {x, y, width, height};
     SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
     if (fill) SDL_RenderFillRect(render, &rect);
     else SDL_RenderDrawRect(render, &rect);
 }
 
-void DrawPixel(int x, int y, SDL_Color color) {
+void DrawPixel(int x, int y, SDL_Color&& color) {
     SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
     SDL_RenderDrawPoint(render, x, y);
 }
+
 //-------- FPSマネージャー
 class fps_manager{
 public:
@@ -222,16 +224,20 @@ int WINAPI WinMain(HINSTANCE handle, HINSTANCE prev_handle, LPSTR lp_cmd, int n_
         window_width,
         window_height,
         SDL_WINDOW_SHOWN);
+    assert(window != nullptr);
     canvas = SDL_GetWindowSurface(window);
+    assert(canvas != nullptr);
     render = SDL_CreateRenderer(window, -1, 0);
+    assert(render != nullptr);
     font = TTF_OpenFont("ipag-mona.ttf", 15);
+    assert(font != nullptr);
 
     bool flag = true;
 
     while(flag){
         if(SDL_PollEvent(&event)){
             switch(event.type){
-            case SDL_KEYDOWN:
+            case SDL_QUIT:
                 flag = false;
                 break;
             default:
