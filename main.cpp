@@ -8,7 +8,10 @@
 #include <cmath>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <DxLib.h>
+//#include <DxLib.h>
+#include <windows.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include "bmp.hpp"
 
 double rnd(){
@@ -24,6 +27,10 @@ using vector2d = Eigen::Matrix<double,2,1,Eigen::DontAlign>;
 int window_width = 0;
 int window_height = 0;
 
+SDL_Surface* canvas;
+SDL_Renderer* render;
+TTF_Font* font;
+
 const double pi = 4.0 * std::atan(1.0);
 
 // 万有引力定数
@@ -32,6 +39,42 @@ const double G = 1.0;
 //-------- メイングラフィックハンドル
 int main_graphic_handle;
 
+SDL_Surface* SDL_GetVideoSurface() {
+    return canvas;
+}
+
+SDL_Color GetColor(uint8_t r, uint8_t g, uint8_t b) {
+    return SDL_Color{r, g, b};
+}
+
+void DrawString(int x, int y, const char* str, SDL_Color color) {
+    SDL_Rect rect, scr_rect;
+    SDL_Surface *image = TTF_RenderUTF8_Blended(font, str, color);
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = image->w;
+    rect.h = image->h;
+    scr_rect.x = 0;
+    scr_rect.y = 0;
+    SDL_BlitSurface(image, &rect, SDL_GetVideoSurface(), &scr_rect);
+}
+
+void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color) {
+    SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
+    SDL_RenderDrawLine(render, x1, y1, x2, y2);
+}
+
+void DrawBox(int x, int y, int width, int height, SDL_Color color, BOOL fill) {
+    SDL_Rect rect = {x, y, width, height};
+    SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
+    if (fill) SDL_RenderFillRect(render, &rect);
+    else SDL_RenderDrawRect(render, &rect);
+}
+
+void DrawPixel(int x, int y, SDL_Color color) {
+    SDL_SetRenderDrawColor(render, color.r, color.g, color.g, 255);
+    SDL_RenderDrawPoint(render, x, y);
+}
 //-------- FPSマネージャー
 class fps_manager{
 public:
@@ -168,38 +211,45 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp){
 int WINAPI WinMain(HINSTANCE handle, HINSTANCE prev_handle, LPSTR lp_cmd, int n_cmd_show){
     rikai::init();
 
-    // init DxLib
-    if(
-        SetOutApplicationLogValidFlag(FALSE) != 0 ||
-        ChangeWindowMode(TRUE) != DX_CHANGESCREEN_OK ||
-        SetGraphMode(window_width, window_height, 32) != DX_CHANGESCREEN_OK ||
-        SetMainWindowText("gravity") != 0 ||
-        DxLib_Init() != 0
-    ){ return -1; }
+    SDL_Window *window;
+    SDL_Event event;
 
-    SetHookWinProc(window_proc);
-    SetDrawScreen(DX_SCREEN_BACK);
+    SDL_Init(SDL_INIT_EVERYTHING);
+    TTF_Init();
+
+    window = SDL_CreateWindow(
+        "gravity",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        window_width,
+        window_height,
+        SDL_WINDOW_SHOWN);
+    canvas = SDL_GetWindowSurface(window);
+    render = SDL_CreateRenderer(window, -1, 0);
+    font = TTF_OpenFont("ipag-mona.ttf", 24);
 
     bool flag = true;
 
-    while(true){
-        if(ProcessMessage() == -1){
-            break;
+    while(flag){
+        if(SDL_PollEvent(&event)){
+            switch(event.type){
+            case SDL_KEYDOWN:
+                flag = false;
+                break;
+            default:
+                break;
+            }
         }
 
         DrawBox(0, 0, window_width, window_height, GetColor(0xFF, 0xFF, 0xFF), TRUE);
         rikai::draw();
-        ScreenFlip();
-
-        if(flag){
-            WaitKey();
-            flag = false;
-        }
+        SDL_RenderPresent(render);
 
         rikai::proc();
         fps();
     }
 
-    DxLib_End();
+    TTF_CloseFont(font);
+    TTF_Quit();
     return 0;
 }
